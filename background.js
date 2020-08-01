@@ -9,5 +9,4 @@ var contexts = ["selection"];
 var id = "search";
 
 chrome.contextMenus.create({"id": id, "title": title, "contexts": contexts});
-
 chrome.contextMenus.onClicked.addListener(searchOnGoogleMaps);
