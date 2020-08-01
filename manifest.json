@@ -1,0 +1,20 @@
+{
+    "name": "Google Maps Search",
+    "version": "1.0",
+    "description": "Search for addresses with just one click!",
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+    "icons": {
+        "64": "assets/logo_64.png",
+        "128": "assets/logo_128.png",
+        "512": "assets/logo_512.png"
+    },
+    "permissions": [
+        "storage",
+        "contextMenus",
+        "tabs"
+    ],
+    "manifest_version": 2
+}
