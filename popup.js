@@ -1,10 +1,10 @@
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.greeting == "create_popup") {
-        var selection = window.getSelection();
+    var selection = window.getSelection();
         var textRange = selection.getRangeAt(0);
         var rect = textRange.getBoundingClientRect();
         var selectedText = selection.toString();
         var div = createPopupMap(rect.left, rect.top + window.pageYOffset);
+    if (request.greeting == "create_popup") {
         chrome.runtime.sendMessage({ greeting: "sending_map_div", query: selectedText, map_div: div }, function (response) {
             if (response) {
               console.log(response.farewell);
@@ -15,6 +15,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     }
     if (request.greeting == "resending_map") {
         console.log(request.map);
+        div.innerHTML = request.map;
         sendResponse({farewell: "thank you"})
     }
 });

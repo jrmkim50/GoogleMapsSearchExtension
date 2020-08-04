@@ -36,7 +36,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 function retrieveMap(map) {
   // console.log(map.getDiv());
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, { greeting: "resending_map", map: "test" }, function (response) {
+    chrome.tabs.sendMessage(tabs[0].id, { greeting: "resending_map", map: map.getDiv().outerHTML }, function (response) {
       console.log("hit")
       if (response) {
         console.log(response.farewell);
