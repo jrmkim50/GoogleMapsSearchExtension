@@ -1,10 +1,12 @@
 //Create context menu button
 var title = "Search on Google Maps";
 var contexts = ["selection"];
-var id = "search_ext";
+var id = "gmaps_search_ext";
 
-chrome.contextMenus.create({ "id": id, "title": title, "contexts": contexts });
-chrome.contextMenus.onClicked.addListener(searchOnGoogleMaps);
+chrome.runtime.onInstalled.addListener(function() {
+  chrome.contextMenus.create({ "id": id, "title": title, "contexts": contexts });
+  chrome.contextMenus.onClicked.addListener(searchOnGoogleMaps);
+})
 
 function searchOnGoogleMaps(info, tab) {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -16,33 +18,21 @@ function searchOnGoogleMaps(info, tab) {
   });
 }
 
-//Load google maps script
-const script = document.createElement("script");
-script.id = "google-maps-api";
-script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyCrlbAYmXbhOOFvHn4DFAFvzK48QY_R3Pk&libraries=places";
-script.async = true;
-document.body.appendChild(script);
-
 //Listen for message from popup
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.greeting == "sending_map_div") {
-    var map = createGoogleMap(createPopupMap(0,0));
-    handleGeoCoding(map, "Google", retrieveMap); //request.query
-    sendResponse({ farewell: "goodbye" });
+  if (request.greeting == "sending_map_frame") {
+    var div = createPopupMap(0,0)
+    // var map = createGoogleMap(createPopupMap(0,0));
+    // handleGeoCoding(map, "Google", retrieveMap); //request.query
+    console.log(div.outerHTML);
+    sendResponse({ farewell: "goodbye", div: div.outerHTML });
     return true;
   }
 })
 
 function retrieveMap(map) {
-  // console.log(map.getDiv());
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, { greeting: "resending_map", map: map.getDiv().outerHTML }, function (response) {
-      console.log("hit")
-      if (response) {
-        console.log(response.farewell);
-      }
-    });
-  });
+  console.log(map);
+  
 }
 
 function createGoogleMap(googleMapDiv) {
@@ -78,18 +68,20 @@ function handleGeoCoding(map, address, cb) {
 }
 
 function createPopupMap(x, y, hidden = false) {
-  var prevDiv = document.querySelector("#chromeGoogleMapsSearchPopupDiv");
-  var newPopup = document.createElement("div");
-  newPopup.id = "chromeGoogleMapsSearchPopupDiv";
-  if (prevDiv) {
-      document.body.replaceChild(newPopup, prevDiv);
-  } else {
-      document.body.appendChild(newPopup);
+  var newPopup = document.getElementById("#chromeGoogleMapsDiv")
+  if (newPopup) {
+    newPopup.parentNode.removeChild(newPopup);
   }
+  var newPopup = document.createElement("div");
+  newPopup.id = "chromeGoogleMapsDiv";
   newPopup.style.left = x + 'px';
   newPopup.style.top = y + 'px';
+  newPopup.style.width = '300px';
+  newPopup.style.height = '300px';
+  newPopup.style.backgroundColor = 'red';
   if (hidden) {
       newPopup.style.display = "none"
   }
+  document.body.appendChild(newPopup);
   return newPopup;
 }

@@ -1,7 +1,7 @@
-#chromeGoogleMapsSearchPopupDiv {
+#chromeGoogleMapsSearchPopup {
     position: absolute;
     display: block;
-    background-color: green;
+    /* background-color: green; */
     height: 300px;
     width: 300px;
 }

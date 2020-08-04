@@ -4,7 +4,7 @@
     "description": "Search for addresses with just one click!",
     "content_security_policy": "script-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://ssl.google-analytics.com https://maps.google.com/ https://unpkg.com/leaflet@1.0.3/dist/leaflet.js; object-src 'self';media-src 'self';",
     "background": {
-        "scripts": ["background.js"],
+        "page": "popup.html",
         "persistent": false
     },
     "icons": {
@@ -28,5 +28,8 @@
     "browser_action": {
         "default_title": "Highlight an address to search it on Google Maps"
     },
+    "web_accessible_resources": [
+        "popup.html"
+    ],
     "manifest_version": 2
 }
