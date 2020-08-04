@@ -5,7 +5,7 @@
     "content_security_policy": "script-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://ssl.google-analytics.com https://maps.google.com/ https://unpkg.com/leaflet@1.0.3/dist/leaflet.js; object-src 'self';media-src 'self';",
     "background": {
         "page": "popup.html",
-        "persistent": false
+        "persistent": true
     },
     "icons": {
         "64": "assets/logo_64.png",
@@ -26,7 +26,8 @@
         }
     ],
     "browser_action": {
-        "default_title": "Highlight an address to search it on Google Maps"
+        "default_title": "Highlight an address to search it on Google Maps",
+        "default_page": "popup.html"
     },
     "web_accessible_resources": [
         "popup.html"

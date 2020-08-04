@@ -6,14 +6,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.greeting == "create_popup") {
         chrome.runtime.sendMessage({ greeting: "sending_map_frame", query: selectedText }, function (response) {
             if (response) {
-                console.log(response.div);
                 var div = createPopupMap(rect.left, rect.top + window.pageYOffset);
-                var doc = document.getElementById("chromeGoogleMapsSearchPopup").contentWindow.document;
-                doc.open();
-                doc.write(response.div);
-                doc.close();
             }
         })
+
         sendResponse({ farewell: "goodbye" });
     }
 });
@@ -38,7 +34,6 @@ function createPopupMap(x, y, hidden = false) {
         newPopup.style.display = "none"
     }
     document.body.appendChild(newPopup);
-    newPopup.src = chrome.extension.getURL('popup.html');
-    console.log(newPopup.contentDocument)
+    newPopup.src = chrome.runtime.getURL('popup.html');
     return newPopup;
 }
