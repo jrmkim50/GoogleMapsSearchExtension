@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="popup.css" />
+        <script type="text/javascript" src="popup.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrlbAYmXbhOOFvHn4DFAFvzK48QY_R3Pk&libraries=places" async></script>
+    </head>
+    <body>
+        <div id="map_canvas"></div>
+    </body>
+</html>
+
+"content_scripts": [
+    {
+        "matches": ["<all_urls>"],
+        "js": ["popup.js"],
+        "css": ["popup.css"]
+    }
+],

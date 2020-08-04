@@ -2,6 +2,7 @@
     "name": "Google Maps Search",
     "version": "1.0",
     "description": "Search for addresses with just one click!",
+    "content_security_policy": "script-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://ssl.google-analytics.com https://maps.google.com/ https://unpkg.com/leaflet@1.0.3/dist/leaflet.js; object-src 'self';media-src 'self';",
     "background": {
         "scripts": ["background.js"],
         "persistent": false
@@ -17,15 +18,15 @@
         "activeTab",
         "tabs"
     ],
-    "browser_action": {
-        "default_title": "Highlight an address to search it on Google Maps"
-    },
     "content_scripts": [
         {
-            "matches": ["*://*.com/*"],
+            "matches": ["<all_urls>"],
             "js": ["popup.js"],
             "css": ["popup.css"]
         }
     ],
+    "browser_action": {
+        "default_title": "Highlight an address to search it on Google Maps"
+    },
     "manifest_version": 2
 }
