@@ -2,9 +2,9 @@
     position: absolute;
     display: block;
     /* background-color: green; */
+    margin: 20px;
     height: 300px;
     width: 300px;
     border: 0px;
-    /* background: transparent url(assets/logo_64.png) no-repeat center center; */
-    background-image: url("assets/logo_64.png");
+    background: transparent url("https://raw.githubusercontent.com/jrmkim50/GoogleMapsSearchExtension/master/assets/91.gif?token=AE6OP3PFRRDD2HG3XEMUYM27FI6EC") no-repeat top left;
 }
