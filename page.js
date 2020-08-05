@@ -1,6 +1,6 @@
 //Create context menu button
 
-const script = document.createElement("script");
+var script = document.createElement("script");
 script.id = "google-maps-api";
 script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyCrlbAYmXbhOOFvHn4DFAFvzK48QY_R3Pk&libraries=places";
 script.async = true;
@@ -9,20 +9,40 @@ document.body.style.margin = 0;
 
 var div = createPopupMap(0,0);
 var map;
+var queries = ["Columbia University", "Hunter College", "Queens College", "Cornell University", "New York Public Library"]
 
 script.addEventListener("load", function(ev) {
   map = createGoogleMap(div)
-  handleGeoCoding(map, "Hunter College", retrieveMap); //msg.query
 })
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  handleGeoCoding(map, "Queens College", retrieveMap, sendResponse); //msg.query
-  return true;
+
+chrome.runtime.onConnect.addListener(function(port) {
+  port.onMessage.addListener(function(msg) {
+    if (msg.greeting == "update_map") {
+      chrome.storage.local.set({"query": msg.query});
+      handleGeoCoding(map, msg.query, retrieveMap, port); //msg.query
+      return true;
+    }
+  });
 });
 
-function retrieveMap(map, sendResponse = null) {
-  if (sendResponse) {
-    sendResponse({ farewell: "goodbye" });
+setTimeout(function() {
+  chrome.storage.local.get("query", (results) => {
+    if (results.query) {
+      var quer = results.query;
+      console.log(quer);
+      handleGeoCoding(map, quer, retrieveMap); //msg.query
+    } else {
+      var quer = "Dorney Park";
+      console.log(quer);
+      handleGeoCoding(map, quer, retrieveMap); //msg.query
+    }
+  });
+}, 50)
+
+function retrieveMap(map, port = null) {
+  if (port) {
+    port.postMessage({farewell: "goodbye"});
   }
 }
 
@@ -41,18 +61,26 @@ function createGoogleMap(googleMapDiv) {
   return null
 }
 
-function handleGeoCoding(map, address, cb, sendResponse = null) {
+function handleGeoCoding(map, address, cb, port = null) {
   if (map) {
     var geocoder = new google.maps.Geocoder();
     geocoder.geocode({ address: address }, function (results, status) {
       if (status === google.maps.GeocoderStatus.OK) {
-        console.log(results[0].geometry.location.lat())
         map.setCenter(results[0].geometry.location);
-        new google.maps.Marker({
+        var marker = new google.maps.Marker({
           map: map,
-          position: results[0].geometry.location
+          position: results[0].geometry.location,
+          title: "test"
         });
-        cb(map, sendResponse);
+        var infoWindow = new google.maps.InfoWindow({
+          content: address
+        })
+        google.maps.addEventListener(marker, "click", () => {
+          infoWindow.open(map, marker);
+        })
+        if (cb) {
+          cb(map, port);
+        }
       }
     })
   }
@@ -62,7 +90,6 @@ function createPopupMap(x, y, hidden = false) {
   var newPopup = document.getElementById("chromeGoogleMapsDiv")
   if (newPopup) {
     newPopup.parentNode.removeChild(newPopup);
-    console.log("removing node");
   }
   var newPopup = document.createElement("div");
   newPopup.id = "chromeGoogleMapsDiv";
