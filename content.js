@@ -4,6 +4,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     var rect = textRange.getBoundingClientRect();
     var selectedText = selection.toString();
     sendResponse({ farewell: "goodbye" });
+    
     var port = chrome.runtime.connect({name: "maps_comms_link"});
     port.postMessage({greeting: "update_map", query: selectedText});
     port.onMessage.addListener(function(msg) {
@@ -29,13 +30,6 @@ function createPopupMap(x, y, hidden = false) {
     }
     newPopup.src = chrome.runtime.getURL('popup.html');
     return newPopup;
-}
-
-function refreshDiv() {
-    var popup = document.getElementById("chromeGoogleMapsSearchPopup");
-    // popup.src = chrome.runtime.getURL('popup.html');
-    console.log(popup)
-    // popup.contentWindow.location.reload(true);
 }
 
 // document.body.addEventListener("mousemove", function (event) {

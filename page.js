@@ -7,54 +7,39 @@ script.async = true;
 document.body.appendChild(script);
 document.body.style.margin = 0;
 
-var div = createPopupMap(0,0);
+var div = createPopupMap(0, 0);
 var map;
-var queries = ["Columbia University", "Hunter College", "Queens College", "Cornell University", "New York Public Library"]
 
-script.addEventListener("load", function(ev) {
+script.addEventListener("load", function (ev) {
   map = createGoogleMap(div)
 })
 
 
-chrome.runtime.onConnect.addListener(function(port) {
-  port.onMessage.addListener(function(msg) {
+chrome.runtime.onConnect.addListener(function (port) {
+  port.onMessage.addListener(function (msg) {
     if (msg.greeting == "update_map") {
-      chrome.storage.local.set({"query": msg.query});
-      handleGeoCoding(map, msg.query, retrieveMap, port); //msg.query
+      chrome.storage.local.set({ "query": msg.query });
+      port.postMessage({ farewell: "goodbye" })
       return true;
     }
   });
 });
 
-setTimeout(function() {
+setTimeout(function () {
   chrome.storage.local.get("query", (results) => {
+    var quer = "Dorney Park";
     if (results.query) {
-      var quer = results.query;
-      console.log(quer);
-      handleGeoCoding(map, quer, retrieveMap); //msg.query
-    } else {
-      var quer = "Dorney Park";
-      console.log(quer);
-      handleGeoCoding(map, quer, retrieveMap); //msg.query
+      quer = results.query;
     }
+    handleGeoCoding(map, quer); //msg.query
   });
 }, 50)
-
-function retrieveMap(map, port = null) {
-  if (port) {
-    port.postMessage({farewell: "goodbye"});
-  }
-}
 
 function createGoogleMap(googleMapDiv) {
   if (google) {
     var gmap = new google.maps.Map(googleMapDiv, {
-      zoom: 15,
-      center: {
-        lat: 43.642567,
-        lng: -79.387054,
-      },
-      disableDefaultUI: true,
+      zoom: 15, center: { lat: 43.642567, lng: -79.387054 },
+      disableDefaultUI: true
     })
     return gmap;
   }
@@ -75,7 +60,8 @@ function handleGeoCoding(map, address, cb, port = null) {
         var infoWindow = new google.maps.InfoWindow({
           content: address
         })
-        google.maps.addEventListener(marker, "click", () => {
+        infoWindow.open(map, marker);
+        google.maps.event.addListener(marker, "click", () => {
           infoWindow.open(map, marker);
         })
         if (cb) {
@@ -99,7 +85,7 @@ function createPopupMap(x, y, hidden = false) {
   newPopup.style.height = '300px';
   newPopup.style.backgroundColor = 'red';
   if (hidden) {
-      newPopup.style.display = "none"
+    newPopup.style.display = "none"
   }
   document.body.appendChild(newPopup);
   return newPopup;
