@@ -38,7 +38,7 @@ setTimeout(function () {
     if (results.query) {
       query = results.query;
     }
-    handleGeoCoding(gmap, query);
+    handleGeoCoding(gmap, query, Date.now());
   });
 }, 1000)
 
@@ -53,7 +53,7 @@ function createGoogleMap(googleMapDiv) {
   return null
 }
 
-function handleGeoCoding(map, address, cb, port = null) {
+function handleGeoCoding(map, address, time) {
   if (google && !map) {
     map = createGoogleMap(div);
   }
@@ -70,6 +70,8 @@ function handleGeoCoding(map, address, cb, port = null) {
       google.maps.event.addListener(marker, "click", () => {
         infoWindow.open(map, marker);
       })
+      map.getDiv().style.visibility = 'visible';
+    } else {
       map.getDiv().style.visibility = 'visible';
     }
   })
