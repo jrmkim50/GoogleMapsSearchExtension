@@ -1,19 +1,15 @@
-//Create context menu button
-
 var script = document.createElement("script");
 script.id = "google-maps-api";
 script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyCrlbAYmXbhOOFvHn4DFAFvzK48QY_R3Pk&libraries=places";
 script.async = true;
 document.body.appendChild(script);
 document.body.style.margin = 0;
-
-var div = createPopupMap(0, 0);
-var map;
-
 script.addEventListener("load", function (ev) {
   map = createGoogleMap(div)
 })
 
+var div = createPopupMap(0, 0);
+var map;
 
 chrome.runtime.onConnect.addListener(function (port) {
   port.onMessage.addListener(function (msg) {
@@ -25,15 +21,13 @@ chrome.runtime.onConnect.addListener(function (port) {
   });
 });
 
-setTimeout(function () {
-  chrome.storage.local.get("query", (results) => {
-    var quer = "Dorney Park";
-    if (results.query) {
-      quer = results.query;
-    }
-    handleGeoCoding(map, quer); //msg.query
-  });
-}, 50)
+chrome.storage.local.get("query", (results) => {
+  var quer = "Dorney Park";
+  if (results.query) {
+    quer = results.query;
+  }
+  handleGeoCoding(map, quer);
+});
 
 function createGoogleMap(googleMapDiv) {
   if (google) {
@@ -54,8 +48,7 @@ function handleGeoCoding(map, address, cb, port = null) {
         map.setCenter(results[0].geometry.location);
         var marker = new google.maps.Marker({
           map: map,
-          position: results[0].geometry.location,
-          title: "test"
+          position: results[0].geometry.location
         });
         var infoWindow = new google.maps.InfoWindow({
           content: address
@@ -72,21 +65,15 @@ function handleGeoCoding(map, address, cb, port = null) {
   }
 }
 
-function createPopupMap(x, y, hidden = false) {
+function createPopupMap(x, y) {
   var newPopup = document.getElementById("chromeGoogleMapsDiv")
   if (newPopup) {
     newPopup.parentNode.removeChild(newPopup);
   }
   var newPopup = document.createElement("div");
   newPopup.id = "chromeGoogleMapsDiv";
-  newPopup.style.left = x + 'px';
-  newPopup.style.top = y + 'px';
   newPopup.style.width = '300px';
   newPopup.style.height = '300px';
-  newPopup.style.backgroundColor = 'red';
-  if (hidden) {
-    newPopup.style.display = "none"
-  }
   document.body.appendChild(newPopup);
   return newPopup;
 }
