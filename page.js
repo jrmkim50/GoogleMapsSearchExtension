@@ -72,6 +72,7 @@ function handleGeoCoding(map, address, time) {
       })
       map.getDiv().style.visibility = 'visible';
     } else {
+      map.getDiv().innerHTML = "<h1>Location not found.</h1>"
       map.getDiv().style.visibility = 'visible';
     }
   })

@@ -11,6 +11,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         port.onMessage.addListener(function (msg) {
             if (msg.greeting == "show_popup") {
                 console.log("showing");
+                var popup = document.getElementById("chromeGoogleMapsSearchPopup");
+                popup.style.background = "none";
             }
         });
     }
@@ -22,7 +24,10 @@ function createPopupMap(x, y) {
         newPopup.parentNode.removeChild(newPopup);
     }
     newPopup = document.createElement("iframe");
+    var button = document.createElement("button");
+    button.textContent = "X";
     document.body.appendChild(newPopup);
+    document.body.insertBefore(button, newPopup)
     newPopup.id = "chromeGoogleMapsSearchPopup";
     if (x + 300 > window.innerWidth) {
         newPopup.style.left = (x - 200) + 'px';
