@@ -40,7 +40,7 @@ setTimeout(function () {
     }
     handleGeoCoding(gmap, query);
   });
-}, 10000)
+}, 1000)
 
 function createGoogleMap(googleMapDiv) {
   if (google) {
