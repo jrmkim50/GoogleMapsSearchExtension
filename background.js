@@ -9,7 +9,7 @@ chrome.runtime.onInstalled.addListener(function() {
 
 function searchOnGoogleMaps(info, tab) {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, { greeting: "create_popup" }, function (response) {
+    chrome.tabs.sendMessage(tabs[0].id, { greeting: "get_selected_text" }, function (response) {
       if (response) {
         console.log(response.farewell);
       }

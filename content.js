@@ -3,16 +3,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     var textRange = selection.getRangeAt(0);
     var rect = textRange.getBoundingClientRect();
     var selectedText = selection.toString();
-    sendResponse({ farewell: "goodbye" });
+    sendResponse({ farewell: "found selected text" });
     
-    var port = chrome.runtime.connect({name: "maps_comms_link"});
-    port.postMessage({greeting: "update_map", query: selectedText});
-    port.onMessage.addListener(function(msg) {
-        if (msg) {
-            console.log(msg.farewell);
+    chrome.runtime.sendMessage({greeting: "update_map", query: selectedText}, function(response) {
+        if (response) {
+            console.log(response.farewell);
             var div = createPopupMap(rect.left, rect.top + window.pageYOffset);
         }
-    });
+    })
 });
 
 function createPopupMap(x, y) {
@@ -23,7 +21,11 @@ function createPopupMap(x, y) {
     newPopup = document.createElement("iframe");
     document.body.appendChild(newPopup);
     newPopup.id = "chromeGoogleMapsSearchPopup";
-    newPopup.style.left = x + 'px';
+    if (x + 300 > window.innerWidth) {
+        newPopup.style.left = (x - 200) + 'px';
+    } else {
+        newPopup.style.left = x + 'px';
+    }
     newPopup.style.top = y + 'px';
     newPopup.src = chrome.runtime.getURL('popup.html');
     return newPopup;
