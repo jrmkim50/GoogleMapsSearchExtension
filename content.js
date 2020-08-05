@@ -4,13 +4,15 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         var textRange = selection.getRangeAt(0);
         var rect = textRange.getBoundingClientRect();
         var selectedText = selection.toString();
-        sendResponse({ farewell: "found selected text" });    
-        chrome.runtime.sendMessage({greeting: "update_map", query: selectedText}, function(response) {
-            if (response) {
-                var div = createPopupMap(rect.left, rect.top + window.pageYOffset);
-                console.log(response.farewell);
+        sendResponse({ farewell: "found selected text" });
+        var div = createPopupMap(rect.left, rect.top + window.pageYOffset);
+        var port = chrome.runtime.connect({ name: "chrome_gmaps_search_ext_port" });
+        port.postMessage({ greeting: "update_map", query: selectedText })
+        port.onMessage.addListener(function (msg) {
+            if (msg.greeting == "show_popup") {
+                console.log("showing");
             }
-        })
+        });
     }
 });
 

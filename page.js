@@ -12,24 +12,35 @@ function gmapsScriptCallback() {
   map = createGoogleMap(div)
 }
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  if (request.greeting == "update_map") {
-    chrome.storage.local.set({ "query": request.query });
-    sendResponse({ farewell: "done updating map" })
-  }
-})
+var portVar;
 
-setTimeout(function() {
+chrome.runtime.onConnect.addListener(function (port) {
+  port.onMessage.addListener(function (msg) {
+    if (msg.greeting == "update_map") {
+      console.log("18");
+      chrome.storage.local.set({ "query": msg.query });
+      search(port);
+    }
+    return true;
+  });
+});
+
+function search(port) {
+  setTimeout(function () {
+    port.postMessage({ greeting: "show_popup" });
+  }, 1000)
+}
+
+setTimeout(function () {
   chrome.storage.local.get("query", (results) => {
-    var quer = "Dorney Park";
+    var query = "Dorney Park";
     var gmap = map;
     if (results.query) {
-      quer = results.query;
-      console.log(quer);
+      query = results.query;
     }
-    handleGeoCoding(gmap, quer);
+    handleGeoCoding(gmap, query);
   });
-}, 1000)
+}, 10000)
 
 function createGoogleMap(googleMapDiv) {
   if (google) {
@@ -49,32 +60,17 @@ function handleGeoCoding(map, address, cb, port = null) {
   var geocoder = new google.maps.Geocoder();
   geocoder.geocode({ address: address }, function (results, status) {
     if (status === google.maps.GeocoderStatus.OK) {
-      console.log(map.getCenter().lat());
       map.setCenter(results[0].geometry.location);
-      console.log(results);
       var marker = new google.maps.Marker({
         map: map,
         position: results[0].geometry.location
       });
-      var infoWindow = new google.maps.InfoWindow({
-        content: address
-      })
+      var infoWindow = new google.maps.InfoWindow({ content: address })
       infoWindow.open(map, marker);
       google.maps.event.addListener(marker, "click", () => {
         infoWindow.open(map, marker);
       })
-
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, { greeting: "finished_geolocation" }, function (response) {
-          if (response) {
-            console.log(response.farewell);
-          }
-        });
-      });
-
-      if (cb) {
-        cb(map, port);
-      }
+      map.getDiv().style.visibility = 'visible';
     }
   })
 }
@@ -88,6 +84,7 @@ function createPopupMap(x, y) {
   newPopup.id = "chromeGoogleMapsDiv";
   newPopup.style.width = '300px';
   newPopup.style.height = '300px';
+  newPopup.style.visibility = 'hidden';
   document.body.appendChild(newPopup);
   return newPopup;
 }
