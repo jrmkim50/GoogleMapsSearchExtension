@@ -1,16 +1,18 @@
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    var selection = window.getSelection();
-    var textRange = selection.getRangeAt(0);
-    var rect = textRange.getBoundingClientRect();
-    var selectedText = selection.toString();
-    sendResponse({ farewell: "found selected text" });
-    
-    chrome.runtime.sendMessage({greeting: "update_map", query: selectedText}, function(response) {
-        if (response) {
-            console.log(response.farewell);
-            var div = createPopupMap(rect.left, rect.top + window.pageYOffset);
-        }
-    })
+    if (request.greeting == "get_selected_text") {
+        var selection = window.getSelection();
+        var textRange = selection.getRangeAt(0);
+        var rect = textRange.getBoundingClientRect();
+        var selectedText = selection.toString();
+        sendResponse({ farewell: "found selected text" });
+        
+        chrome.runtime.sendMessage({greeting: "update_map", query: selectedText}, function(response) {
+            if (response) {
+                console.log(response.farewell);
+                var div = createPopupMap(rect.left, rect.top + window.pageYOffset);
+            }
+        })
+    }
 });
 
 function createPopupMap(x, y) {
