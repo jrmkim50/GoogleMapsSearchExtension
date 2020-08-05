@@ -12,7 +12,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             if (msg.greeting == "show_popup") {
                 console.log("showing");
                 var popup = document.getElementById("chromeGoogleMapsSearchPopup");
-                popup.style.background = "none";
             }
         });
     }
@@ -24,24 +23,40 @@ function createPopupMap(x, y) {
         newPopup.parentNode.removeChild(newPopup);
     }
     newPopup = document.createElement("iframe");
-    var button = document.createElement("button");
-    button.textContent = "X";
-    document.body.appendChild(newPopup);
-    document.body.insertBefore(button, newPopup)
     newPopup.id = "chromeGoogleMapsSearchPopup";
-    if (x + 300 > window.innerWidth) {
-        newPopup.style.left = (x - 200) + 'px';
+    document.body.appendChild(newPopup);
+    var width = parseInt(getComputedStyle(newPopup).getPropertyValue('width'));
+    var height = parseInt(getComputedStyle(newPopup).getPropertyValue('height'));
+    if (x + width > window.innerWidth) {
+        console.log("x + ")
+        newPopup.style.left = (x - width) + 'px';
     } else {
         newPopup.style.left = x + 'px';
     }
-    newPopup.style.top = y + 'px';
+    if (y + height > window.innerHeight) {
+        newPopup.style.top = (y - height) + 'px';
+    } else {
+        newPopup.style.top = y + 'px';
+    }
     newPopup.src = chrome.runtime.getURL('popup.html');
     return newPopup;
 }
 
-// document.body.addEventListener("mousemove", function (event) {
-//     var selection = window.getSelection().toString();
-//     if (selection) {
+document.body.addEventListener("click", function (event) {
+    var newPopup = document.getElementById("chromeGoogleMapsSearchPopup");
+    if (newPopup) {
+        var overlap = checkOverlap(newPopup.style.top, newPopup.style.left, newPopup.style.height, newPopup.style.width, 
+            event.clientY, event.clientX);
+        if (!overlap) {
+            document.body.removeChild(newPopup);
+        }
+    }
+})
 
-//     }
-// })
+function checkOverlap(top1, left1, height1, width1,
+    top2, left2) {
+    if (top2 > top1 && top2 < top1 + height1 && left2 > left1 && left2 < left1+width1) {
+        return true;
+    }
+    return false;
+}

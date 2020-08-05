@@ -65,15 +65,18 @@ function handleGeoCoding(map, address, time) {
         map: map,
         position: results[0].geometry.location
       });
+      map.fitBounds(results[0].geometry.viewport);
       var infoWindow = new google.maps.InfoWindow({ content: address })
       infoWindow.open(map, marker);
       google.maps.event.addListener(marker, "click", () => {
         infoWindow.open(map, marker);
       })
-      map.getDiv().style.visibility = 'visible';
+      map.getDiv().classList.remove("hiddenDiv");
+      map.getDiv().classList.add("visibleDiv");
     } else {
       map.getDiv().innerHTML = "<h1>Location not found.</h1>"
-      map.getDiv().style.visibility = 'visible';
+      map.getDiv().classList.remove("hiddenDiv");
+      map.getDiv().classList.add("visibleDiv");
     }
   })
 }
@@ -85,9 +88,7 @@ function createPopupMap(x, y) {
   }
   newPopup = document.createElement("div");
   newPopup.id = "chromeGoogleMapsDiv";
-  newPopup.style.width = '300px';
-  newPopup.style.height = '300px';
-  newPopup.style.visibility = 'hidden';
+  newPopup.classList.add("hiddenDiv");
   document.body.appendChild(newPopup);
   return newPopup;
 }

@@ -2,8 +2,29 @@
     position: absolute;
     display: block;
     margin: 20px;
-    height: 300px;
-    width: 300px;
+    height: var(--dim);
+    width: var(--dim);
     border: 0px;
-    background: transparent url("chrome-extension://opbdhbobfijppniehfkmckgdlamgeilf/assets/Spin-1s-200px.gif") no-repeat top left;
+    border-radius: 10px;
+    box-shadow: 10px 10px 5px gray;
+    z-index: 10000;
+    background: whitesmoke url("chrome-extension://opbdhbobfijppniehfkmckgdlamgeilf/assets/Spin-1s-200px.gif") no-repeat center center;
+}
+
+#chromeGoogleMapsDiv {
+    height: var(--dim);
+    width: var(--dim);
+    background-color: whitesmoke;
+}
+
+.hiddenDiv {
+    visibility: hidden;
+}
+
+.visibleDiv {
+    visibility: visible;
+}
+
+:root {
+    --dim: 400px;
 }
