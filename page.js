@@ -12,8 +12,6 @@ function gmapsScriptCallback() {
   map = createGoogleMap(div)
 }
 
-var portVar;
-
 chrome.runtime.onConnect.addListener(function (port) {
   port.onMessage.addListener(function (msg) {
     if (msg.greeting == "update_map") {

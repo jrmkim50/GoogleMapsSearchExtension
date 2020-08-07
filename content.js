@@ -39,10 +39,11 @@ function createPopupMap(x, y) {
         newPopup.style.top = y + 'px';
     }
     newPopup.src = chrome.runtime.getURL('popup.html');
+    document.body.addEventListener("click", listenForCloseAction)
     return newPopup;
 }
 
-document.body.addEventListener("click", function (event) {
+function listenForCloseAction(event) {
     var newPopup = document.getElementById("chromeGoogleMapsSearchPopup");
     if (newPopup) {
         var overlap = checkOverlap(newPopup.style.top, newPopup.style.left, newPopup.style.height, newPopup.style.width, 
@@ -51,7 +52,8 @@ document.body.addEventListener("click", function (event) {
             document.body.removeChild(newPopup);
         }
     }
-})
+    document.body.removeEventListener("click", listenForCloseAction);
+}
 
 function checkOverlap(top1, left1, height1, width1,
     top2, left2) {
