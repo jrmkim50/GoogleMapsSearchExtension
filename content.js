@@ -1,17 +1,32 @@
+const greeting = "GREETING"
+const farewell = "FAREWELL";
+
+function generateMessage(message, mode, extraContent) {
+    if (mode == "GREETING") {
+      var message = { "greeting": message };
+    } else {
+      var message = { "farewell": message };
+    }
+    if (extraContent) {
+      message = Object.assign({}, message, extraContent);
+    }
+    return message
+}
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.greeting == "get_selected_text") {
         var selection = window.getSelection();
         var textRange = selection.getRangeAt(0);
         var rect = textRange.getBoundingClientRect();
         var selectedText = selection.toString();
-        sendResponse({ farewell: "found selected text" });
+        sendResponse(generateMessage("found selected text", farewell));
         var div = createPopupMap(rect.left, rect.top + window.pageYOffset);
+
         var port = chrome.runtime.connect({ name: "chrome_gmaps_search_ext_port" });
-        port.postMessage({ greeting: "update_map", query: selectedText })
+        port.postMessage(generateMessage("update_map", greeting, {"query": selectedText}))
         port.onMessage.addListener(function (msg) {
             if (msg.greeting == "show_popup") {
-                console.log("showing");
-                var popup = document.getElementById("chromeGoogleMapsSearchPopup");
+                // var popup = document.getElementById("chromeGoogleMapsSearchPopup");
             }
         });
     }

@@ -5,6 +5,11 @@ script.async = true;
 document.body.appendChild(script);
 document.body.style.margin = 0;
 
+const visibile = "VISIBLE";
+const hide = "HIDE";
+const greeting = "GREETING"
+const farewell = "FAREWELL";
+
 var div = createPopupMap(0, 0);
 var map;
 
@@ -12,31 +17,42 @@ function gmapsScriptCallback() {
   map = createGoogleMap(div)
 }
 
+function generateMessage(message, mode, extraContent) {
+  if (mode == "GREETING") {
+    var message = { "greeting": message };
+  } else {
+    var message = { "farewell": message };
+  }
+  if (extraContent) {
+    message = Object.assign({}, message, extraContent);
+  }
+  return message
+}
+
 chrome.runtime.onConnect.addListener(function (port) {
   port.onMessage.addListener(function (msg) {
-    if (msg.greeting == "update_map") {
-      console.log("18");
+    if (msg.greeting == "update_map") { 
       chrome.storage.local.set({ "query": msg.query });
-      search(port);
+      postDelayedMessage(port);
     }
     return true;
   });
 });
 
-function search(port) {
+function postDelayedMessage(port) {
   setTimeout(function () {
-    port.postMessage({ greeting: "show_popup" });
+    port.postMessage(generateMessage("show_popup", greeting));
   }, 1000)
 }
 
 setTimeout(function () {
   chrome.storage.local.get("query", (results) => {
-    var query = "Dorney Park";
+    var query = "";
     var gmap = map;
     if (results.query) {
       query = results.query;
     }
-    handleGeoCoding(gmap, query, Date.now());
+    handleGeoCoding(gmap, query);
   });
 }, 1000)
 
@@ -51,32 +67,49 @@ function createGoogleMap(googleMapDiv) {
   return null
 }
 
-function handleGeoCoding(map, address, time) {
-  if (google && !map) {
-    map = createGoogleMap(div);
+function showErrorMessage(map) {
+  map.getDiv().innerHTML = "<h1 style='margin-top: 10px; text-align: center;'>Location not found.</h1>"
+  visibility(map.getDiv(), visibile);
+}
+
+function visibility(div, mode) {
+  if (mode === "HIDE") {
+    div.classList.add("hiddenDiv");
+    div.classList.remove("visibleDiv");
+  } else {
+    div.classList.add("visibleDiv");
+    div.classList.remove("hiddenDiv");
   }
-  var geocoder = new google.maps.Geocoder();
-  geocoder.geocode({ address: address }, function (results, status) {
-    if (status === google.maps.GeocoderStatus.OK) {
-      map.setCenter(results[0].geometry.location);
-      var marker = new google.maps.Marker({
-        map: map,
-        position: results[0].geometry.location
-      });
-      map.fitBounds(results[0].geometry.viewport);
-      var infoWindow = new google.maps.InfoWindow({ content: address })
-      infoWindow.open(map, marker);
-      google.maps.event.addListener(marker, "click", () => {
-        infoWindow.open(map, marker);
-      })
-      map.getDiv().classList.remove("hiddenDiv");
-      map.getDiv().classList.add("visibleDiv");
+}
+
+function handleGeoCoding(map, address) {
+  try {
+    if (!address) {
+      showErrorMessage(map);
     } else {
-      map.getDiv().innerHTML = "<h1>Location not found.</h1>"
-      map.getDiv().classList.remove("hiddenDiv");
-      map.getDiv().classList.add("visibleDiv");
+      var geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: address }, function (results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+          map.setCenter(results[0].geometry.location);
+          var marker = new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location
+          });
+          map.fitBounds(results[0].geometry.viewport);
+          var infoWindow = new google.maps.InfoWindow({ content: address })
+          infoWindow.open(map, marker);
+          google.maps.event.addListener(marker, "click", () => {
+            infoWindow.open(map, marker);
+          })
+          visibility(map.getDiv(), visibile);
+        } else {
+          showErrorMessage(map);
+        }
+      })
     }
-  })
+  } catch (error) {
+    showErrorMessage(map);
+  }
 }
 
 function createPopupMap(x, y) {
@@ -86,7 +119,7 @@ function createPopupMap(x, y) {
   }
   newPopup = document.createElement("div");
   newPopup.id = "chromeGoogleMapsDiv";
-  newPopup.classList.add("hiddenDiv");
+  visibility(newPopup, hide);
   document.body.appendChild(newPopup);
   return newPopup;
 }
