@@ -1,20 +1,54 @@
 #chromeGoogleMapsSearchPopup {
-    position: absolute;
-    display: block;
-    margin: 20px;
-    height: var(--dim);
-    width: var(--dim);
     border: 0px;
-    border-radius: 10px;
-    box-shadow: 10px 10px 5px gray;
-    z-index: 10000;
+    height: 60%;
+    width: 90%;
+    margin-bottom: 5px;
     background: whitesmoke url("chrome-extension://opbdhbobfijppniehfkmckgdlamgeilf/assets/Spin-1s-200px.gif") no-repeat center center;
 }
 
-#chromeGoogleMapsDiv {
-    height: var(--dim);
-    width: var(--dim);
+#chromeGoogleMapsSearchPopupContainer {
+    z-index: 10000;
+    box-shadow: 10px 10px 5px gray;
+    border: 0px;
+    border-radius: 10px;
+    position: absolute;
     background-color: whitesmoke;
+    height: 500px;
+    width: 500px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+#chromeGoogleMapsSearchPopupContainer button {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    width: 90%;
+}
+
+@media (max-width: 700px) {
+    #chromeGoogleMapsSearchPopupContainer {
+        height: 220px;
+        width: 200px;
+    }
+    #chromeGoogleMapsSearchPopup {
+        height: 90%;
+    }
+}
+
+#chromeGoogleMapsDiv {
+    background-color: whitesmoke;
+}
+
+#campaign_gmaps_api {
+    max-height: 30%;
+    max-width: 90%;
+    text-align: center;
+}
+
+#campaign_gmaps_api img {
+    max-height: 100%; 
+    width: auto;
 }
 
 .hiddenDiv {

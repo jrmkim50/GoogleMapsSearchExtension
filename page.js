@@ -31,9 +31,22 @@ function generateMessage(message, mode, extraContent) {
 
 chrome.runtime.onConnect.addListener(function (port) {
   port.onMessage.addListener(function (msg) {
-    if (msg.greeting == "update_map") { 
+    if (msg.greeting == "update_map") {
       chrome.storage.local.set({ "query": msg.query });
+      chrome.storage.local.set({ "size": msg.size })
       postDelayedMessage(port);
+    } else if (msg.greeting == "update_map_size") {
+      chrome.storage.local.set({ "size": msg.size }, function () {
+        chrome.storage.local.get("size", (results) => {
+          if (results) {
+            console.log(results);
+            div.style.height = results.size.height;
+            div.style.width = results.size.width;
+          }
+        })
+      });
+      console.log("setting to " + msg.size);
+      port.postMessage({ "farewell": "done" })
     }
     return true;
   });
@@ -46,6 +59,13 @@ function postDelayedMessage(port) {
 }
 
 setTimeout(function () {
+  chrome.storage.local.get("size", (results) => {
+    if (results) {
+      console.log(results);
+      div.style.height = results.size.height;
+      div.style.width = results.size.width;
+    }
+  })
   chrome.storage.local.get("query", (results) => {
     var query = "";
     var gmap = map;
@@ -54,7 +74,10 @@ setTimeout(function () {
     }
     handleGeoCoding(gmap, query);
   });
+
 }, 1000)
+
+
 
 function createGoogleMap(googleMapDiv) {
   if (google) {
@@ -82,7 +105,7 @@ function visibility(div, mode) {
   }
 }
 
-function handleGeoCoding(map, address) {
+function handleGeoCoding(map, address, size) {
   try {
     if (!address) {
       showErrorMessage(map);
@@ -109,6 +132,7 @@ function handleGeoCoding(map, address) {
     }
   } catch (error) {
     showErrorMessage(map);
+    console.log(error);
   }
 }
 
