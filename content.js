@@ -30,9 +30,19 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         var map = document.getElementById("chromeGoogleMapsSearchPopup");
         port.postMessage(generateMessage("update_map", greeting, { "query": selectedText, "size": { "height": map.offsetHeight + 'px', "width": map.offsetWidth + 'px'} }))
         port.onMessage.addListener(function (msg) {
+            console.log(msg);
+            var div = createPopupMap(0,0);
         });
     }
 });
+
+function getFrameHtml(htmlFileName) {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", chrome.extension.getURL(htmlFileName), false);
+    xmlhttp.send();
+
+    return xmlhttp.responseText;
+}
 
 window.addEventListener("resize", function (event) {
     var map = document.getElementById("chromeGoogleMapsSearchPopup");
@@ -52,6 +62,7 @@ window.addEventListener("resize", function (event) {
         }
         var port = chrome.runtime.connect({ name: "chrome_gmaps_search_ext_port" });
         port.postMessage(generateMessage("update_map_size", greeting, { "size": { "height": map.offsetHeight + 'px', "width": map.offsetWidth + 'px'} }))
+        map.src = map.src;
     }
 })
 
@@ -87,7 +98,7 @@ function createPopupMap(x, y) {
     var newPopup = document.createElement("iframe");
     newPopup.id = "chromeGoogleMapsSearchPopup";
     div.appendChild(newPopup)
-    newPopup.src = chrome.runtime.getURL('popup.html');
+    newPopup.src = chrome.runtime.getURL('_generated_background_page.html');
 
     var campaign = document.createElement("div");
     campaign.id = "campaign_gmaps_api"
