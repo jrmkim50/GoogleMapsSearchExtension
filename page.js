@@ -22,12 +22,11 @@ chrome.runtime.onConnect.addListener(function (port) {
   port.onMessage.addListener(function (msg) {
     if (msg.greeting == "update_map") {
       div = createPopupMap(0, 0)
-      postDelayedMessage(port);
       setTimeout(function() {
         var map = createGoogleMap(div);
         div.style.height = msg.size.height;
         div.style.width = msg.size.width;
-        handleGeoCoding(map, msg.query);
+        handleGeoCoding(map, msg.query, port);
       }, 1000)
     } else if (msg.greeting == "update_map_size") {
       div.style.height = msg.size.height;
@@ -37,12 +36,6 @@ chrome.runtime.onConnect.addListener(function (port) {
     return true;
   });
 });
-
-function postDelayedMessage(port) {
-  setTimeout(function () {
-    port.postMessage({ "greeting": "show_popup" });
-  }, 1000)
-}
 
 
 function createGoogleMap(googleMapDiv) {
@@ -71,7 +64,7 @@ function visibility(div, mode) {
   }
 }
 
-function handleGeoCoding(map, address, size) {
+function handleGeoCoding(map, address, port) {
   try {
     if (!address) {
       showErrorMessage(map);
@@ -90,6 +83,10 @@ function handleGeoCoding(map, address, size) {
           google.maps.event.addListener(marker, "click", () => {
             infoWindow.open(map, marker);
           })
+          console.log(results);
+          if (port) {
+            port.postMessage({ "greeting": "show_popup", "placeId": results[0].place_id });
+          }
           visibility(map.getDiv(), visibile);
         } else {
           showErrorMessage(map);

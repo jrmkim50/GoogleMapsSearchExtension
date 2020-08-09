@@ -94,6 +94,8 @@ function Map(parent, parentDiv) {
     this.size = { height: '60%', width: '90%' };
     this.map_size = { height: '90%', width: '100%' };
     this.query = "";
+    this.link = null;
+    this.mapElement = null;
 }
 
 Map.prototype.getElement = function () {
@@ -105,8 +107,8 @@ Map.prototype.setSize = function (size) {
 }
 
 Map.prototype.getMapSize = function () {
-    if (this.element) {
-        return { height: this.element.offsetHeight * 0.90, width: this.element.offsetWidth }
+    if (this.mapElement) {
+        return { height: this.mapElement.offsetHeight, width: this.mapElement.offsetWidth }
     }
     return this.map_size;
 }
@@ -133,15 +135,25 @@ Map.prototype.create = function () {
     newPopup.src = chrome.runtime.getURL('popup.html');
     div.appendChild(newPopup)
 
+    this.mapElement = newPopup;
+
     this.setElement(div);
     /*
     Add whatever more objects I need to add here
     */
     var link = document.createElement("a");
-    link.textContent = "link"
-    link.href = "https://google.com"
+    link.textContent = ""
+    link.href = "#"
+    this.link = link;
     div.appendChild(link)
     this.parentElement.appendChild(div);
+}
+
+Map.prototype.setLink = function(placeId) {
+    if (this.link) {
+        this.link.href = "https://www.google.com/maps/place/?q=place_id:" + placeId;
+        this.link.textContent = "Open on Google Maps"
+    }
 }
 
 Map.prototype.update = function () {
@@ -157,7 +169,9 @@ Map.prototype.search = function () {
     var port = chrome.runtime.connect({ name: "chrome_gmaps_search_ext_port" });
     console.log(this.getMapSize())
     port.postMessage({ "greeting": "update_map", "query": this.query, "size": { "height": this.getMapSize().height + 'px', "width": this.getMapSize().width + 'px' } })
+    var self = this;
     port.onMessage.addListener(function (msg) {
+        self.setLink(msg.placeId);
     });
 }
 
@@ -178,10 +192,6 @@ Ad.prototype.create = function () {
     campaign.id = "campaign_gmaps_api"
     this.parentElement.appendChild(campaign);
     this.setElement(campaign)
-    var link = document.createElement("a");
-    link.textContent = "link"
-    link.href = "https://google.com"
-    campaign.appendChild(link)
     this.getAd();
 }
 
@@ -200,7 +210,9 @@ Ad.prototype.getAd = function () {
             var json = JSON.parse(xhr.responseText);
             if (json.ads.length) {
                 var ads = JSON.parse(xhr.responseText).ads;
-                this.element.innerHTML = ads[Math.floor(Math.random() * ads.length)].addContent
+                var mailBody = "mailto:no-one@snai1mai1.com?subject=look at this website&body=Hi,I found this website and thought you might like it http://www.geocities.com/wowhtml/"
+                var linkDiv = "<div><a href = '" + mailBody + "'>Request ad space</a></div>"
+                this.element.innerHTML = ads[Math.floor(Math.random() * ads.length)].adContent + linkDiv
             } else {
                 // make default ad
             }
@@ -236,13 +248,14 @@ chrome.runtime.onMessage.addListener(function (req, sender, sendResponse) {
 })
 
 var prevSize = { height: 500, width: 500 };
+var initialSize = { height: 500, width: 500 };
 
 window.addEventListener("resize", function (event) {
     if (container.getElement().style.visibility == "visible") {
         if (prevSize.width != container.getSize().width && prevSize.height != container.getSize().height) {
             prevSize = container.getSize();
             container.setSize(container.getSize());
-            if (container.getSize().height < 500) {
+            if (container.getSize().height < initialSize.height) {
                 ad.remove();
                 map.setSize({ height: '90%', width: '90%' })
             } else {
