@@ -1,9 +1,20 @@
 #chromeGoogleMapsSearchPopup {
     border: 0px;
-    height: 60%;
-    width: 90%;
-    margin-bottom: 5px;
+    height: 90%;
+    width: 100%;
     background: whitesmoke url("chrome-extension://opbdhbobfijppniehfkmckgdlamgeilf/assets/Spin-1s-200px.gif") no-repeat center center;
+}
+
+#mapViewContainer {
+    border: 0px;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+#mapViewContainer a {
+    font-size: smaller;
 }
 
 #chromeGoogleMapsSearchPopupContainer {
@@ -31,9 +42,6 @@
         height: 220px;
         width: 200px;
     }
-    #chromeGoogleMapsSearchPopup {
-        height: 90%;
-    }
 }
 
 #chromeGoogleMapsDiv {
@@ -43,7 +51,9 @@
 #campaign_gmaps_api {
     max-height: 30%;
     max-width: 90%;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
 }
 
 #campaign_gmaps_api img {

@@ -1,7 +1,5 @@
-// Container 
-function Container(children) {
+function Container() {
     this.size = { height: 500, width: 500 };
-    this.children = children;
     this.element = null;
 }
 
@@ -44,7 +42,7 @@ Container.prototype.update = function (x, y) {
     } else {
         div.style.top = y + 'px';
     }
-
+    
     this.setElement(div);
 }
 
@@ -92,73 +90,58 @@ function Map(parent, parentDiv) {
     this.parentElement = parentDiv;
     this.element = null;
     this.size = { height: '60%', width: '90%' };
-    this.map_size = { height: '90%', width: '100%' };
+    this.map_size = { height: '80%', width: '100%' };
     this.query = "";
 }
 
-Map.prototype.getElement = function () {
+Map.prototype.getElement = function() {
     return this.element;
 }
 
-Map.prototype.setSize = function (size) {
+Map.prototype.setSize = function(size) {
     this.size = size;
 }
 
-Map.prototype.getMapSize = function () {
-    if (this.element) {
-        return { height: this.element.offsetHeight * 0.90, width: this.element.offsetWidth }
-    }
-    return this.map_size;
-}
-
-Map.prototype.setElement = function (element) {
+Map.prototype.setElement = function(element) {
     this.element = element;
 }
 
-Map.prototype.getQuery = function () {
+Map.prototype.getQuery = function() {
     return this.query;
 }
 
-Map.prototype.setQuery = function (query) {
+Map.prototype.setQuery = function(query) {
     this.query = query;
 }
 
-Map.prototype.create = function () {
+Map.prototype.create = function() {
     var div = document.createElement("div");
     div.id = "mapViewContainer";
     div.style.height = this.size.height;
     div.style.width = this.size.width;
     var newPopup = document.createElement("iframe");
     newPopup.id = "chromeGoogleMapsSearchPopup";
-    newPopup.src = chrome.runtime.getURL('popup.html');
+    // newPopup.src = chrome.runtime.getURL('popup.html');
     div.appendChild(newPopup)
-
     this.setElement(div);
     /*
     Add whatever more objects I need to add here
     */
-    var link = document.createElement("a");
-    link.textContent = "link"
-    link.href = "https://google.com"
-    div.appendChild(link)
     this.parentElement.appendChild(div);
 }
 
-Map.prototype.update = function () {
-    this.element.style.height = this.size.height;
-    this.element.style.width = this.size.width;
-    this.setElement(this.element);
+Map.prototype.update = function() {
+    var div = document.getElementById("mapViewContainer");
+    div.style.height = this.size.height;
+    div.style.width = this.size.width;
+    this.setElement(div);
     /*
     Add whatever more objects I need to add here
     */
 }
 
-Map.prototype.search = function () {
-    var port = chrome.runtime.connect({ name: "chrome_gmaps_search_ext_port" });
-    console.log(this.getMapSize())
-    port.postMessage({ "greeting": "update_map", "query": this.query, "size": { "height": this.getMapSize().height + 'px', "width": this.getMapSize().width + 'px' } })
-    port.onMessage.addListener(function (msg) {
-    });
+Map.prototype.search = function() {
+    //searching
 }
 
 // Ad
@@ -169,31 +152,27 @@ function Ad(parent, parentDiv) {
     this.element = null;
 }
 
-Ad.prototype.setElement = function (element) {
+Ad.prototype.setElement = function(element) {
     this.element = element;
 }
 
-Ad.prototype.create = function () {
+Ad.prototype.create = function() {
     var campaign = document.createElement("div");
     campaign.id = "campaign_gmaps_api"
     this.parentElement.appendChild(campaign);
     this.setElement(campaign)
-    var link = document.createElement("a");
-    link.textContent = "link"
-    link.href = "https://google.com"
-    campaign.appendChild(link)
     this.getAd();
 }
 
-Ad.prototype.remove = function () {
-    this.element.style.display = "none";
+Ad.prototype.remove = function() {
+    this.element.style.visibility = "hidden";
 }
 
-Ad.prototype.show = function () {
-    this.element.style.display = "block";
+Ad.prototype.show = function() {
+    this.element.style.visibility = "visible";
 }
 
-Ad.prototype.getAd = function () {
+Ad.prototype.getAd = function() {
     var xhr = new XMLHttpRequest()
     xhr.onreadystatechange = () => {
         if (xhr.readyState == XMLHttpRequest.DONE) {
@@ -201,8 +180,9 @@ Ad.prototype.getAd = function () {
             if (json.ads.length) {
                 var ads = JSON.parse(xhr.responseText).ads;
                 this.element.innerHTML = ads[Math.floor(Math.random() * ads.length)].addContent
+                this.element.style.display = "block";
             } else {
-                // make default ad
+                this.element.style.display = "none";
             }
         }
     };
@@ -220,44 +200,40 @@ map.create();
 var ad = new Ad(container, container.getElement())
 ad.create();
 
-chrome.runtime.onMessage.addListener(function (req, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function(req, sender, sendResponse) {
     if (req.greeting == "get_selected_text") {
         var selection = window.getSelection();
         var textRange = selection.getRangeAt(0);
         var rect = textRange.getBoundingClientRect();
         var selectedText = selection.toString();
-        sendResponse({ "farewell": "found selected text" });
         container.show();
 
         map.setQuery(selectedText);
         container.update(rect.left, rect.top + window.pageYOffset);
         map.search();
+
+        sendResponse({ "farewell" : "found selected text" })
     }
 })
 
 var prevSize = { height: 500, width: 500 };
 
 window.addEventListener("resize", function (event) {
-    if (container.getElement().style.visibility == "visible") {
-        if (prevSize.width != container.getSize().width && prevSize.height != container.getSize().height) {
-            prevSize = container.getSize();
-            container.setSize(container.getSize());
-            if (container.getSize().height < 500) {
-                ad.remove();
-                map.setSize({ height: '90%', width: '90%' })
-            } else {
-                ad.show();
-                map.setSize({ height: '60%', width: '90%' })
-            }
-
-            var port = chrome.runtime.connect({ name: "chrome_gmaps_search_ext_port" });
-            map.update();
-            port.postMessage({ "greeting": "update_map_size", "size": { "height": map.getMapSize().height + 'px', "width": map.getMapSize().width + 'px' } })
+    if (prevSize.width != container.getSize().width && prevSize.height != container.getSize().height) {
+        prevSize = container.getSize();
+        container.setSize(container.getSize());
+        if (container.getSize().height < 500) {
+            ad.remove();
+            map.setSize({ height: '90%', width: '90%' })
+        } else {
+            ad.show();
+            map.setSize({ height: '60%', width: '90%' })
         }
+        map.update();
+    }
 
-        if (container.getElement().offsetLeft + container.getElement().offsetWidth > window.innerWidth) {
-            container.getElement().style.left = (window.innerWidth - container.getElement().offsetWidth) + "px";
-        }
+    if (container.getElement().offsetLeft + container.getElement().offsetWidth > window.innerWidth) {
+        container.getElement().style.left = (window.innerWidth - container.getElement().offsetWidth) + "px";
     }
 })
 

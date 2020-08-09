@@ -10,28 +10,38 @@ const hide = "HIDE";
 const greeting = "GREETING"
 const farewell = "FAREWELL";
 
-var ready = false;
+var div = createPopupMap(0, 0);
+var map;
 
 function gmapsScriptCallback() {
-  ready = true;
+  map = createGoogleMap(div)
 }
 
-var div = createPopupMap(0, 0);
+function generateMessage(message, mode, extraContent) {
+  if (mode == "GREETING") {
+    var message = { "greeting": message };
+  } else {
+    var message = { "farewell": message };
+  }
+  if (extraContent) {
+    message = Object.assign({}, message, extraContent);
+  }
+  return message
+}
 
 chrome.runtime.onConnect.addListener(function (port) {
   port.onMessage.addListener(function (msg) {
     if (msg.greeting == "update_map") {
-      div = createPopupMap(0, 0)
-      postDelayedMessage(port);
       setTimeout(function() {
-        var map = createGoogleMap(div);
         div.style.height = msg.size.height;
         div.style.width = msg.size.width;
         handleGeoCoding(map, msg.query);
       }, 1000)
+      postDelayedMessage(port);
     } else if (msg.greeting == "update_map_size") {
       div.style.height = msg.size.height;
       div.style.width = msg.size.width;
+      console.log("setting to " + msg.size);
       port.postMessage({ "farewell": "done" })
     }
     return true;
@@ -40,7 +50,7 @@ chrome.runtime.onConnect.addListener(function (port) {
 
 function postDelayedMessage(port) {
   setTimeout(function () {
-    port.postMessage({ "greeting": "show_popup" });
+    port.postMessage(generateMessage("show_popup", greeting));
   }, 1000)
 }
 
