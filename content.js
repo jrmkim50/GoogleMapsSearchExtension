@@ -1,6 +1,9 @@
+var prevSize = { height: 500, width: 500 };
+var initialSize = { height: 500, width: 500 };
+
 // Container 
 function Container(children) {
-    this.size = { height: 500, width: 500 };
+    this.size = initialSize;
     this.children = children;
     this.element = null;
 }
@@ -200,7 +203,7 @@ Ad.prototype.remove = function () {
 }
 
 Ad.prototype.show = function () {
-    this.element.style.display = "block";
+    this.element.style.display = "flex";
 }
 
 Ad.prototype.getAd = function () {
@@ -210,9 +213,25 @@ Ad.prototype.getAd = function () {
             var json = JSON.parse(xhr.responseText);
             if (json.ads.length) {
                 var ads = JSON.parse(xhr.responseText).ads;
-                var mailBody = "mailto:no-one@snai1mai1.com?subject=look at this website&body=Hi,I found this website and thought you might like it http://www.geocities.com/wowhtml/"
-                var linkDiv = "<div><a href = '" + mailBody + "'>Request ad space</a></div>"
-                this.element.innerHTML = ads[Math.floor(Math.random() * ads.length)].adContent + linkDiv
+                var mailBody = "mailto:gmaps.search.business.request@gmail.com?subject=Request an Ad&body=To whom it may concern: If you could give us some information on: (1) what your business is, (2) some examples of images/media you want in your ad, (3) the contact information for your business, then we will be in touch with you! Thanks, Chrome Maps Search"
+                // var linkDiv = "<div><a href = '" + mailBody + "'>Request ad space</a></div>"
+                var id = Math.floor(Math.random() * ads.length);
+                var ad = ads[id];
+                var adLink = document.createElement("a");
+                adLink.href = ad.adLink;
+                
+                var adImage = document.createElement("img");
+                adImage.src = ad.img;
+                adLink.appendChild(adImage);
+                this.element.appendChild(adLink)
+
+                var requestAd = document.createElement("a")
+                requestAd.href = mailBody;
+                requestAd.textContent = "Request ad space"
+                this.element.appendChild(requestAd)
+                
+                // this.element.innerHTML = ads[id].adContent + linkDiv
+                chrome.runtime.sendMessage({greeting: "ad_generated", ad_id: ad.adId})
             } else {
                 // make default ad
             }
@@ -246,9 +265,6 @@ chrome.runtime.onMessage.addListener(function (req, sender, sendResponse) {
         map.search();
     }
 })
-
-var prevSize = { height: 500, width: 500 };
-var initialSize = { height: 500, width: 500 };
 
 window.addEventListener("resize", function (event) {
     if (container.getElement().style.visibility == "visible") {

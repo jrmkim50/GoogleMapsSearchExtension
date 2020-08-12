@@ -22,7 +22,7 @@ chrome.runtime.onConnect.addListener(function (port) {
   port.onMessage.addListener(function (msg) {
     if (msg.greeting == "update_map") {
       div = createPopupMap(0, 0)
-      setTimeout(function() {
+      setTimeout(function () {
         var map = createGoogleMap(div);
         div.style.height = msg.size.height;
         div.style.width = msg.size.width;
