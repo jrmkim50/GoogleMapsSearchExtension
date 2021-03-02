@@ -4,9 +4,10 @@ var id = "gmaps_search_ext";
 
 chrome.runtime.onInstalled.addListener(function () {
   console.log("installed");
-  chrome.contextMenus.create({ "id": id, "title": title, "contexts": contexts });
   chrome.tabs.create({url: chrome.runtime.getURL('help.html')});
 })
+
+chrome.contextMenus.create({ "id": id, "title": title, "contexts": contexts });
 
 chrome.contextMenus.onClicked.addListener(searchOnGoogleMaps);
 console.log("running");
