@@ -7,6 +7,8 @@ let map = undefined;
 
 function gmapsScriptCallback() {
   map = createGoogleMap(document.getElementById("map-div"));
+  if (map)
+    checkStorage(map);
 }
 
 function createGoogleMap(googleMapDiv) {
@@ -15,17 +17,18 @@ function createGoogleMap(googleMapDiv) {
       zoom: 15, center: { lat: 43.642567, lng: -79.387054 },
       disableDefaultUI: true
     });
-
-    chrome.storage.sync.get(['address'], function (items) {
-      console.log(items.address);
-      if (items.address !== "") {
-        chrome.storage.sync.set({ 'address': "" });
-        handleGeoCoding(map, items.address);
-      }
-    });
     return gmap;
   }
-  return null
+  return undefined;
+}
+
+function checkStorage(map) {
+  chrome.storage.sync.get(['address'], function (items) {
+    console.log(items);
+    if (items.address !== "") {
+      handleGeoCoding(map, items.address);
+    }
+  });
 }
 
 function handleGeoCoding(map, address) {

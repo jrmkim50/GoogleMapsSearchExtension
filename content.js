@@ -6,6 +6,7 @@ let selection = undefined;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.greeting === "get_selected_text") {
+        console.log("searching")
         selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
             var textRange = selection.getRangeAt(0);
@@ -15,15 +16,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 sendResponse({ farewell: selectedText });
                 clearChildren();
                 createCloseButton();
+                createDonateLink(); 
                 changeDivVisibility("flex");
                 setMapPosition(rect.left, rect.top);
-                createPopup(selectedText);
-            } catch(err) {
+            } catch (err) {
                 console.log(err);
             }
         } else {
             sendResponse({ farewell: "Nothing selected" });
         }
+    } else if (request.greeting === "ready_to_read") {
+        createPopup();
     }
 });
 
@@ -38,6 +41,7 @@ function convertRectCoordsToDocumentCoords(x, y) {
         x -= width;
     if (y + height > windowHeight)
         y -= height;
+    y+=50;
     return [x, y];
 }
 
@@ -60,6 +64,16 @@ function setMapPosition(x, y) {
     div.style.top = `${y}px`;
 }
 
+function createDonateLink() {
+    if (!div) {
+        return;
+    }
+    let link = document.createElement("a");
+    link.innerText = "Support this project!";
+    link.href = "https://www.buymeacoffee.com/jk23541";
+    div.appendChild(link);
+}
+
 function createCloseButton() {
     if (!div) {
         return;
@@ -72,7 +86,7 @@ function createCloseButton() {
     div.appendChild(button);
 }
 
-function createPopup(address) {
+function createPopup() {
     var newPopup = document.createElement("iframe");
     newPopup.src = chrome.runtime.getURL('popup.html');
     newPopup.id = "chromeGoogleMapsSearchPopup";
