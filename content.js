@@ -11,11 +11,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             var textRange = selection.getRangeAt(0);
             var rect = textRange.getBoundingClientRect();
             var selectedText = selection.toString();
-            sendResponse({ farewell: selectedText });
-            createCloseButton();
-            setMapPosition(rect.left, rect.top);
-            changeDivVisibility("flex");
-            createPopup(selectedText);
+            try {
+                sendResponse({ farewell: selectedText });
+                clearChildren();
+                createCloseButton();
+                changeDivVisibility("flex");
+                setMapPosition(rect.left, rect.top);
+                createPopup(selectedText);
+            } catch(err) {
+                console.log(err);
+            }
         } else {
             sendResponse({ farewell: "Nothing selected" });
         }
@@ -62,8 +67,7 @@ function createCloseButton() {
     let button = document.createElement("button");
     button.innerText = "Close";
     button.onclick = function () {
-        div.textContent = '';
-        changeDivVisibility("none");
+        clearChildren();
     }
     div.appendChild(button);
 }
@@ -74,17 +78,20 @@ function createPopup(address) {
     newPopup.id = "chromeGoogleMapsSearchPopup";
     document.body.addEventListener("click", closeOnBackgroundClick)
     div.appendChild(newPopup);
-    // newPopup.contentWindow.postMessage(JSON.stringify({ address: address }), chrome.runtime.getURL('popup.html'));
     return newPopup;
 }
 
 function closeOnBackgroundClick(event) {
     var overlap = checkClickOverlap(div, event.clientY, event.clientX);
     if (!overlap) {
-        div.textContent = '';
-        changeDivVisibility("none");
+        clearChildren();
         document.body.removeEventListener("click", closeOnBackgroundClick);
     }
+}
+
+function clearChildren() {
+    div.textContent = '';
+    changeDivVisibility("none");
 }
 
 function changeDivVisibility(visiblility) {

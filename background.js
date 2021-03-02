@@ -10,9 +10,9 @@ chrome.runtime.onInstalled.addListener(function () {
 chrome.contextMenus.onClicked.addListener(searchOnGoogleMaps);
 
 function searchOnGoogleMaps(_, tab) {
+  console.log("clicked");
   chrome.tabs.sendMessage(tab.id, { greeting: "get_selected_text" }, (response) => {
-    chrome.storage.sync.set({ 'address': response.farewell }, function () {
-      console.log('Value is set to ' + response.farewell);
-    });
+    console.log(response.farewell);
+    chrome.storage.sync.set({ 'address': response.farewell });
   });
 }

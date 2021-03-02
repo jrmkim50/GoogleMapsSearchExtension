@@ -14,41 +14,57 @@ function createGoogleMap(googleMapDiv) {
     var gmap = new google.maps.Map(googleMapDiv, {
       zoom: 15, center: { lat: 43.642567, lng: -79.387054 },
       disableDefaultUI: true
-    })
+    });
+
+    chrome.storage.sync.get(['address'], function (items) {
+      console.log(items.address);
+      if (items.address !== "") {
+        chrome.storage.sync.set({ 'address': "" });
+        handleGeoCoding(map, items.address);
+      }
+    });
     return gmap;
   }
   return null
 }
 
-chrome.storage.sync.get(['address'], function(items) {
-  console.log(items);
-  handleGeoCoding(map, items.address)
-});
-
 function handleGeoCoding(map, address) {
-  console.log("0")
   if (!map) {
     return;
   }
-  var geocoder = new google.maps.Geocoder();
-  geocoder.geocode({ address: address }, function (results, status) {
-    console.log("2")
-    if (status === google.maps.GeocoderStatus.OK) {
-      console.log("3")
-      map.setCenter(results[0].geometry.location);
+  var service = new google.maps.places.PlacesService(map);
+  var request = {
+    query: address,
+    fields: ['name', 'geometry']
+  }
+  service.findPlaceFromQuery(request, function (results, status) {
+    if (status === google.maps.places.PlacesServiceStatus.OK) {
+      if (results && results.length > 0) {
+        var marker = new google.maps.Marker({
+          map: map,
+          position: results[0].geometry.location
+        });
+
+        var infoWindow = new google.maps.InfoWindow({ content: address })
+        infoWindow.open(map, marker);
+        google.maps.event.addListener(marker, "click", () => {
+          infoWindow.open(map, marker);
+        })
+        map.setCenter(results[0].geometry.location);
+        map.fitBounds(results[0].geometry.viewport);
+      }
+    } else {
       var marker = new google.maps.Marker({
         map: map,
-        position: results[0].geometry.location
+        position: map.getCenter()
       });
-      map.fitBounds(results[0].geometry.viewport);
-      var infoWindow = new google.maps.InfoWindow({ content: address })
+      var infoWindow = new google.maps.InfoWindow({ content: status })
       infoWindow.open(map, marker);
       google.maps.event.addListener(marker, "click", () => {
         infoWindow.open(map, marker);
       })
-    } else {
-      console.log("4")
-    } 
-  })
+    }
+    document.getElementById("map-div").style.visibility = "visible";
+  });
 }
 
