@@ -41,7 +41,6 @@ function convertRectCoordsToDocumentCoords(x, y) {
         x -= width;
     if (y + height > windowHeight)
         y -= height;
-    y+=50;
     return [x, y];
 }
 
