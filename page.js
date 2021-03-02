@@ -3,42 +3,11 @@ script.id = "google-maps-api";
 script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyCrlbAYmXbhOOFvHn4DFAFvzK48QY_R3Pk&libraries=places&callback=gmapsScriptCallback";
 script.async = true;
 document.body.appendChild(script);
-document.body.style.margin = 0;
-
-var div = createPopupMap(0, 0);
-var map;
+let map = undefined;
 
 function gmapsScriptCallback() {
-  map = createGoogleMap(div)
+  map = createGoogleMap(document.getElementById("map-div"));
 }
-
-chrome.runtime.onConnect.addListener(function (port) {
-  port.onMessage.addListener(function (msg) {
-    if (msg.greeting == "update_map") {
-      console.log("18");
-      chrome.storage.local.set({ "query": msg.query });
-      search(port);
-    }
-    return true;
-  });
-});
-
-function search(port) {
-  setTimeout(function () {
-    port.postMessage({ greeting: "show_popup" });
-  }, 1000)
-}
-
-setTimeout(function () {
-  chrome.storage.local.get("query", (results) => {
-    var query = "Dorney Park";
-    var gmap = map;
-    if (results.query) {
-      query = results.query;
-    }
-    handleGeoCoding(gmap, query, Date.now());
-  });
-}, 1000)
 
 function createGoogleMap(googleMapDiv) {
   if (google) {
@@ -51,13 +20,21 @@ function createGoogleMap(googleMapDiv) {
   return null
 }
 
-function handleGeoCoding(map, address, time) {
-  if (google && !map) {
-    map = createGoogleMap(div);
+chrome.storage.sync.get(['address'], function(items) {
+  console.log(items);
+  handleGeoCoding(map, items.address)
+});
+
+function handleGeoCoding(map, address) {
+  console.log("0")
+  if (!map) {
+    return;
   }
   var geocoder = new google.maps.Geocoder();
   geocoder.geocode({ address: address }, function (results, status) {
+    console.log("2")
     if (status === google.maps.GeocoderStatus.OK) {
+      console.log("3")
       map.setCenter(results[0].geometry.location);
       var marker = new google.maps.Marker({
         map: map,
@@ -69,24 +46,9 @@ function handleGeoCoding(map, address, time) {
       google.maps.event.addListener(marker, "click", () => {
         infoWindow.open(map, marker);
       })
-      map.getDiv().classList.remove("hiddenDiv");
-      map.getDiv().classList.add("visibleDiv");
     } else {
-      map.getDiv().innerHTML = "<h1>Location not found.</h1>"
-      map.getDiv().classList.remove("hiddenDiv");
-      map.getDiv().classList.add("visibleDiv");
-    }
+      console.log("4")
+    } 
   })
 }
 
-function createPopupMap(x, y) {
-  var newPopup = document.getElementById("chromeGoogleMapsDiv")
-  if (newPopup) {
-    newPopup.parentNode.removeChild(newPopup);
-  }
-  newPopup = document.createElement("div");
-  newPopup.id = "chromeGoogleMapsDiv";
-  newPopup.classList.add("hiddenDiv");
-  document.body.appendChild(newPopup);
-  return newPopup;
-}
